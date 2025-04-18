@@ -2,6 +2,10 @@ import { useEffect, useRef, useState } from "react";
 import { hightlightsSlides } from "../constants";
 import { pauseImg, playImg } from "../utils";
 import { useGSAP } from "@gsap/react";
+import gsap from "gsap";
+import { ScrollTrigger } from "gsap/ScrollTrigger";
+
+gsap.registerPlugin(ScrollTrigger);
 
 const VideoCarousel = () => {
   const videoRef = useRef<(HTMLVideoElement | null)[]>([]);
@@ -16,7 +20,7 @@ const VideoCarousel = () => {
     isPlaying: false,
   });
 
-  const [loadedData, setloadedData] = useState([]);
+  const [loadedData, setloadedData] = useState<React.SyntheticEvent<HTMLVideoElement, Event>[]>([]);
 
   const { isEnd, startPlay, videoId, isLastVideo, isPlaying } = video;
 
@@ -49,12 +53,24 @@ const VideoCarousel = () => {
     }
   }, [startPlay, videoId, isPlaying, loadedData]);
 
-  useEffect(() => {
-    let span = videoSpanRef.current[videoId];
+  const handleLoadedMetadata = (i: number, e: React.SyntheticEvent<HTMLVideoElement, Event>) => setloadedData((prev) => [...prev, e]);
 
-    if (span) {
-      let anim = gsap.to(span, {
-        onUpdate: () => {},
+  useEffect(() => {
+    let currentProgess = 0;
+    let span = videoSpanRef.current;
+
+    if (span[videoId]) {
+      let anim = gsap.to(span[videoId], {
+        onUpdate: () => {
+          const progress = Math.ceil (anim.progress() * 100); 
+          if(progress != currentProgess) {
+            currentProgess = progress;
+
+            gsap.to(videoDivRef.current[videoId], {
+              width: window.innerWidth < 760 ?  '10vw' :window.innerWidth < 1200 ? '10vw' : '4vw',
+            })
+          }
+        },
         onComplete: () => {},
       });
     }
@@ -115,6 +131,7 @@ const VideoCarousel = () => {
                       isPlaying: true,
                     }));
                   }}
+                  onLoadedMetadata={(e) => handleLoadedMetadata(i, e)}
                 >
                   <source src={list.video} type="video/mp4" />
                 </video>
