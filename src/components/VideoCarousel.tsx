@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { hightlightsSlides } from "../constants";
-import { pauseImg, playImg } from "../utils";
+import { pauseImg, playImg, replayImg } from "../utils";
 import { useGSAP } from "@gsap/react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
@@ -20,11 +20,19 @@ const VideoCarousel = () => {
     isPlaying: false,
   });
 
-  const [loadedData, setloadedData] = useState<React.SyntheticEvent<HTMLVideoElement, Event>[]>([]);
+  const [loadedData, setloadedData] = useState<
+    React.SyntheticEvent<HTMLVideoElement, Event>[]
+  >([]);
 
   const { isEnd, startPlay, videoId, isLastVideo, isPlaying } = video;
 
   useGSAP(() => {
+    gsap.to("#slider", {
+      transform: `translateX(${-100 * videoId}%)`,
+      duration: 2,
+      ease: "power2.inOut",
+    });
+
     gsap.to("#video", {
       scrollTrigger: {
         trigger: "#video",
@@ -53,7 +61,10 @@ const VideoCarousel = () => {
     }
   }, [startPlay, videoId, isPlaying, loadedData]);
 
-  const handleLoadedMetadata = (i: number, e: React.SyntheticEvent<HTMLVideoElement, Event>) => setloadedData((prev) => [...prev, e]);
+  const handleLoadedMetadata = (
+    i: number,
+    e: React.SyntheticEvent<HTMLVideoElement, Event>
+  ) => setloadedData((prev) => [...prev, e]);
 
   useEffect(() => {
     let currentProgess = 0;
@@ -62,13 +73,18 @@ const VideoCarousel = () => {
     if (span[videoId]) {
       let anim = gsap.to(span[videoId], {
         onUpdate: () => {
-          const progress = Math.ceil (anim.progress() * 100); 
-          if(progress != currentProgess) {
+          const progress = Math.ceil(anim.progress() * 100);
+          if (progress != currentProgess) {
             currentProgess = progress;
 
             gsap.to(videoDivRef.current[videoId], {
-              width: window.innerWidth < 760 ?  '10vw' :window.innerWidth < 1200 ? '10vw' : '4vw',
-            })
+              width:
+                window.innerWidth < 760
+                  ? "10vw"
+                  : window.innerWidth < 1200
+                  ? "10vw"
+                  : "4vw",
+            });
             gsap.to(span[videoId], {
               width: `${currentProgess}%`,
               backgroundColor: "white",
@@ -78,14 +94,13 @@ const VideoCarousel = () => {
         onComplete: () => {
           if (isPlaying) {
             gsap.to(videoDivRef.current[videoId], {
-              width: '12px'
-            })
+              width: "12px",
+            });
             gsap.to(span[videoId], {
               backgroundColor: "#afafaf",
-            })
+            });
           }
         },
-
       });
 
       if (videoId === 0) {
@@ -93,12 +108,13 @@ const VideoCarousel = () => {
       }
       const animUpdate = () => {
         const currentVideo = videoRef.current[videoId];
-        if (!currentVideo) return;
-      
-        const progress = currentVideo.currentTime / currentVideo.duration;
-        anim.progress(progress);
+        const currentDuration = currentVideo?.duration || 1;
+
+        if (currentVideo && currentDuration > 0) {
+          anim.progress(currentVideo.currentTime / currentDuration);
+        }
       };
-  
+
       if (isPlaying) {
         gsap.ticker.add(animUpdate);
       } else {
@@ -156,6 +172,11 @@ const VideoCarousel = () => {
                   ref={(el) => {
                     videoRef.current[i] = el;
                   }}
+                  onEnded={() =>
+                    i !== 3
+                      ? handleProcess("video-end", i)
+                      : handleProcess("video-last")
+                  }
                   onPlay={() => {
                     setVideo((prevVideo) => ({
                       ...prevVideo,
@@ -201,7 +222,7 @@ const VideoCarousel = () => {
 
         <button className="control-btn">
           <img
-            src={isLastVideo ? playImg : !isPlaying ? playImg : pauseImg}
+            src={isLastVideo ? replayImg : !isPlaying ? playImg : pauseImg}
             alt={isLastVideo ? "replay" : !isPlaying ? "play" : "pause"}
             onClick={
               isLastVideo
