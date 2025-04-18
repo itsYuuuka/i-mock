@@ -69,10 +69,41 @@ const VideoCarousel = () => {
             gsap.to(videoDivRef.current[videoId], {
               width: window.innerWidth < 760 ?  '10vw' :window.innerWidth < 1200 ? '10vw' : '4vw',
             })
+            gsap.to(span[videoId], {
+              width: `${currentProgess}%`,
+              backgroundColor: "white",
+            });
           }
         },
-        onComplete: () => {},
+        onComplete: () => {
+          if (isPlaying) {
+            gsap.to(videoDivRef.current[videoId], {
+              width: '12px'
+            })
+            gsap.to(span[videoId], {
+              backgroundColor: "#afafaf",
+            })
+          }
+        },
+
       });
+
+      if (videoId === 0) {
+        anim.restart();
+      }
+      const animUpdate = () => {
+        const currentVideo = videoRef.current[videoId];
+        if (!currentVideo) return;
+      
+        const progress = currentVideo.currentTime / currentVideo.duration;
+        anim.progress(progress);
+      };
+  
+      if (isPlaying) {
+        gsap.ticker.add(animUpdate);
+      } else {
+        gsap.ticker.remove(animUpdate);
+      }
     }
   }, [videoId, startPlay]);
 
