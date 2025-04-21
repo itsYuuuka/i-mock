@@ -1,6 +1,7 @@
 import { Group } from "three";
 import { RefObject, Dispatch, SetStateAction, Suspense } from "react";
 import { OrbitControls, PerspectiveCamera, View } from "@react-three/drei";
+import { OrbitControls as OrbitControlsImpl } from "three-stdlib";
 import Lights from "./Lights";
 import Model from "./iPhone";
 import { Html } from "@react-three/drei";
@@ -10,7 +11,7 @@ interface ModelViewProps {
   index: number;
   groupRef: RefObject<Group>;
   gsapType: string;
-  controlRef: RefObject<unknown>;
+  controlRef: RefObject<OrbitControlsImpl | null>;
   setRotationState: Dispatch<SetStateAction<number>>;
   item: {
     title: string;
@@ -33,8 +34,7 @@ const ModelView = ({
     <View
       index={index}
       id={gsapType}
-      className={`w-full h-full
-        ${index === 2} ? 'right-[-100%] : '' `}
+      className={`w-full h-full ${index === 2 ? 'right-[-100%]' : ''}`}
     >
       <ambientLight intensity={0.3} />
 
@@ -50,7 +50,9 @@ const ModelView = ({
         rotateSpeed={0.4}
         target={new THREE.Vector3(0, 0, 0)}
         onEnd={() => {
-          setRotationState(controlRef.current.getAzmuthalAngle());
+          if (controlRef.current) {
+            setRotationState(controlRef.current.getAzimuthalAngle());
+          }
         }}
         />
 
@@ -65,7 +67,7 @@ const ModelView = ({
           }
         >
           <Model 
-            scale={index === 1 ? [15, 15, 15] : [17, 17, 17]}
+            scale={index === 1 ? [15, 15, 15] as [number, number, number] : [17, 17, 17] as [number, number, number]}
             item={item}
             size={size}
           />
