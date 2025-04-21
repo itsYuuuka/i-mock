@@ -6,13 +6,28 @@ Source: https://sketchfab.com/3d-models/apple-iphone-15-pro-max-black-df17520841
 Title: Apple iPhone 15 Pro Max Black
 */
 
-import { useRef } from 'react'
 import { useGLTF, useTexture } from '@react-three/drei'
 import { useEffect } from 'react'
 import * as THREE from 'three'
 
-function Model(props) {
-  const { nodes, materials } = useGLTF('/models/scene.glb')
+// Define the props interface
+interface ModelProps {
+  item: {
+    title: string;
+    color: string[];
+    img: string;
+  };
+  size: string;
+  scale?: [number, number, number] | number;
+  [key: string]: any; // Allow any other props to be passed through
+}
+
+function Model(props: ModelProps) {
+  // Use type assertion to tell TypeScript about the structure
+  const { nodes, materials } = useGLTF('/models/scene.glb') as unknown as {
+    nodes: Record<string, THREE.Mesh>;
+    materials: Record<string, THREE.MeshStandardMaterial>;
+  };
 
   const texture = useTexture(props.item.img);
 
@@ -31,9 +46,11 @@ function Model(props) {
     });
   }, [materials, props.item]);
   
+  // Extract item and size from props to avoid passing them to the group element
+  const { item, size, ...groupProps } = props;
 
   return (
-    <group {...props} dispose={null}>
+    <group {...groupProps} dispose={null}>
       <mesh
         castShadow
         receiveShadow
@@ -147,7 +164,6 @@ function Model(props) {
         scale={0.01}
       >
         <meshStandardMaterial roughness={1} map={texture} />
-
       </mesh>
       <mesh
         castShadow
