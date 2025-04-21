@@ -4,8 +4,8 @@ import { OrbitControls, PerspectiveCamera, View } from "@react-three/drei";
 import { OrbitControls as OrbitControlsImpl } from "three-stdlib";
 import Lights from "./Lights";
 import Model from "./iPhone";
-import { Html } from "@react-three/drei";
 import * as THREE from "three";
+import Loader from "./Loader";
 
 interface ModelViewProps {
   index: number;
@@ -61,9 +61,7 @@ const ModelView = ({
       position={[0, 0, 0]}>
         <Suspense
           fallback={
-            <Html>
-              <div>Loading...</div>
-            </Html>
+            <Loader />
           }
         >
           <Model 
