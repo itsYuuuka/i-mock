@@ -26,16 +26,37 @@ const Model = () => {
 
   const [smallRotation, setSmallRotation] = useState(0);
   const [largeRotation, setLargeRotation] = useState(0);
+  
+  const smallRotationRef = useRef<THREE.Group>(new THREE.Group());
+  const largeRotationRef = useRef<THREE.Group>(new THREE.Group());
+  
+  useEffect(() => {
+    if (smallRotationRef.current) {
+      smallRotationRef.current.rotation.y = smallRotation;
+    }
+  }, [smallRotation]);
+  
+  useEffect(() => {
+    if (largeRotationRef.current) {
+      largeRotationRef.current.rotation.y = largeRotation;
+    }
+  }, [largeRotation]);
 
   const timeline = gsap.timeline();
 
   useEffect(() => {
     if (size === "large") {
-      animateWithGsapTimeline()
+      animateWithGsapTimeline(timeline, small, smallRotationRef, '#view1', '#view2', {
+        transform: 'translateX(-100%)',
+        duration: 2
+      })
     }
 
     if (size === "small") {
-      
+      animateWithGsapTimeline(timeline, large, largeRotationRef, '#view2', '#view1', {
+        transform: 'translateX(0)',
+        duration: 2
+      })
     }
   }, [size])
   
