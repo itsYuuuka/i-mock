@@ -8,6 +8,7 @@ import { Canvas } from "@react-three/fiber";
 import { View } from "@react-three/drei";
 import { models, sizes } from "../constants/index";
 import { OrbitControls as OrbitControlsImpl } from "three-stdlib";
+import { animateWithGsapTimeline } from "../utils/animations";
 
 const Model = () => {
   const [size, setSize] = useState("small");
@@ -30,7 +31,7 @@ const Model = () => {
 
   useEffect(() => {
     if (size === "large") {
-
+      animateWithGsapTimeline()
     }
 
     if (size === "small") {
